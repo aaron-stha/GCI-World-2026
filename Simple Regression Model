@@ -1,0 +1,52 @@
+# Importing Numpy and Pandas to use and manipulate the dataset, whereas sklearn to make the linear regression model
+import numpy as np
+import pandas as pd
+from sklearn import linear_model
+
+# Dataset retrieval and cleaning ( assisted by the course material )
+# Libraries for retrieving data from the web and handling zip files
+import requests, zipfile
+from io import StringIO
+import io
+
+# Specify the url with data
+url = 'https://github.com/Hernan4444/MyAnimeList-Database/archive/refs/heads/master.zip'
+
+# Acquire data from the url
+r = requests.get(url, stream=True)
+
+# read and extract the zipfile
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall()
+
+# Load and clean the data
+anime_data = pd.read_csv('MyAnimeList-Database-master/data/anime.csv')
+anime_data_extracted = anime_data[anime_data['Score'] != 'Unknown'].copy()
+anime_data_extracted['Score'] = pd.to_numeric(anime_data_extracted['Score'])
+
+# The things I learned 
+# The linear regression model, the target column Y_column and the explanatory column X_column are expected to be of numeric types
+def homework(anime_data_extracted, X_column, Y_column):
+    # Extract the data
+    x = anime_data_extracted[[X_column]] # scikit-learn strictly requires the explanatory variables (X) to be 2-dimensional
+    y = anime_data_extracted[Y_column]
+    
+    # Set up the model
+    model = linear_model.LinearRegression()
+
+    # Train the model using the dataset
+    model.fit(x, y) # Using the complete dataset to train as instructed
+    
+    # Calculate the coef of determination
+    result = model.score(x, y) 
+
+    return float(result) # Even tho .score() gives a python float instead of numpy float, it's a good habit to convert the end result into python float since sklearn is filled with numpy datatypes
+
+# Check the model with "Members" as the explanatory variable and "Completed" as the target variable
+R2_value = homework(
+    anime_data_extracted,
+    X_column="Members",
+    Y_column="Completed",
+)
+
+print(f"Your answer:", R2_value) # The expected  R2  value is approximately 0.954 in this case.
