@@ -1,3 +1,5 @@
+# Run in google colab since it may not work for other compilers because we are importing the data from a url
+
 # Importing Numpy and Pandas to use and manipulate the dataset, whereas sklearn to make the linear regression model
 import numpy as np
 import pandas as pd
