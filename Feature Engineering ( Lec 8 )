@@ -1,0 +1,55 @@
+## Import necessary libraries
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+
+# Libraries for retrieving data from the web and handling zip files
+import requests, zipfile
+from io import StringIO
+import io
+
+## Data retrieval 
+# Specify the url with data
+url = 'https://github.com/Hernan4444/MyAnimeList-Database/archive/refs/heads/master.zip'
+
+# Acquire data from the url
+r = requests.get(url, stream=True)
+
+# read and extract the zipfile
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall()
+
+# Load and clean the data
+anime_data = pd.read_csv('MyAnimeList-Database-master/data/anime.csv')
+anime_data_extracted = anime_data[anime_data['Score'] != 'Unknown'].copy()
+anime_data_extracted['Score'] = pd.to_numeric(anime_data_extracted['Score'])
+
+
+## Function definition and declaration 
+'''the scores are standardized ( z score ), then a new dataframe with standardized scores is created 
+and hot encoded verson of the data 'Type' is appended on the same dataframe'''
+
+def homework(anime_data_extracted):
+  # Standardization of the scores
+  mean = anime_data_extracted['Score'].mean()
+  std = anime_data_extracted['Score'].std()
+  Score_std = (anime_data_extracted['Score'] - mean) / std
+  
+  # Make a new dataframe and store the standardized scores
+  result = pd.DataFrame()
+  result['Score_std'] = Score_std    
+
+  # Check the type and assign the binary value as required for each member
+  types = ['Movie', 'Music', 'ONA', 'OVA', 'Special', 'TV']
+  for x in types:
+      result[x] = (anime_data_extracted['Type'] == x).astype(int)
+      
+  return result
+
+## Check with examples
+case_2_data = pd.DataFrame({
+    "Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    "Type": ["Movie", "Music", "ONA", "OVA", "Special", "TV"],
+})
+case_2_answer = homework(case_2_data)
+print(case_2_answer) # We can use display() for better visuals in colab but it wont work on python compilers
