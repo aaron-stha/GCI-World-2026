@@ -1,0 +1,66 @@
+# Import the necessary libraries
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+
+# Libraries for retrieving data from the web and handling zip files
+import requests, zipfile
+from io import StringIO
+import io
+
+
+# Extract and modify the data as needed 
+# Specify the url with data
+url = 'https://github.com/Hernan4444/MyAnimeList-Database/archive/refs/heads/master.zip'
+
+# Acquire data from the url
+r = requests.get(url, stream=True)
+
+# read and extract the zipfile
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall()
+
+# Load and clean the data
+anime_data = pd.read_csv('MyAnimeList-Database-master/data/anime.csv')
+anime_data_extracted = anime_data[anime_data['Score'] != 'Unknown'].copy()
+anime_data_extracted['Score'] = pd.to_numeric(anime_data_extracted['Score'])
+
+
+# Define a function to divide data into equal-frequency deciles, compute the mean score, total members, and cumulative percentage per bin, and return the resulting DataFrame indexed by 'labels'
+def homework(anime_data_extracted):
+    
+  result = pd.DataFrame() # Data definition 
+  labels = ['01','02','03','04','05','06','07','08','09','10']
+  
+  # Didef homework(anime_data_extracted):
+    
+  result = pd.DataFrame() # Data definition 
+  labels = ['01','02','03','04','05','06','07','08','09','10']
+  
+  # Divide the data into 10 bins based on 'Members' with labels inside 'labels'
+  anime_data_extracted['bins']= pd.qcut(anime_data_extracted['Members'], q = 10, labels = labels)
+
+  i = 0 # For location
+  sum = 0 # For cumulative value calculation 
+  # Iterate through 'labels' to calculate and append MeanScore, TotalMembers, and CumulativePct to 'result'
+  for label in labels:
+    bin = anime_data_extracted[anime_data_extracted['bins'] == label]
+    result.loc[i, 'MeanScore'] = np.mean(bin['Score'])
+    result.loc[i, 'TotalMembers'] = np.sum(bin['Members'])
+    sum += np.sum(bin['Members'])
+    result.loc[i, 'CumulativePct'] = sum * 100 / np.sum(anime_data_extracted['Members'])
+    i+=1
+  
+  # Change the index from default to 'labels' 
+  result.index = labels
+  
+  return result
+
+
+# Check it rq
+case_2_data = pd.DataFrame({
+    "Members": np.arange(1, 21),
+    "Score": np.full(20, 5.0),
+})
+case_2_answer = homework(case_2_data)
+print(case_2_answer)
